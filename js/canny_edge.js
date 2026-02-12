@@ -1,17 +1,13 @@
 'use strict';
 
-const snapshotButton = document.querySelector('button#snapshot');
-const filterSelect = document.querySelector('select#filter');
 const thresholdSlider = document.querySelector('#threshold');
 const thresholdValue = document.querySelector('#thresholdValue');
 
-// Variables in global scope
-const video = window.video = document.querySelector('video');
-const canvas = window.canvas = document.querySelector('canvas');
-canvas.width = 480;
-canvas.height = 360;
+// Uses existing global variables from main.js
+const cannyVideo = window.video;
+const cannyCanvas = window.canvas;
+const cannyCtx = cannyCanvas.getContext('2d');
 
-const ctx = canvas.getContext('2d');
 let edgeThreshold = 50;
 
 // Canny Edge Detection implementation
@@ -76,43 +72,29 @@ function cannyEdgeDetection(imageData, threshold) {
 
 // Real-time Canny Edge processing
 function processCannyEdge() {
-    if (video.videoWidth && video.videoHeight) {
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    if (cannyVideo.videoWidth && cannyVideo.videoHeight) {
+        cannyCtx.drawImage(cannyVideo, 0, 0, cannyCanvas.width, cannyCanvas.height);
+        const imageData = cannyCtx.getImageData(0, 0, cannyCanvas.width, cannyCanvas.height);
         const filtered = cannyEdgeDetection(imageData, edgeThreshold);
-        ctx.putImageData(filtered, 0, 0);
+        cannyCtx.putImageData(filtered, 0, 0);
     }
     requestAnimationFrame(processCannyEdge);
 }
 
-snapshotButton.onclick = function() {
-    canvas.className = filterSelect.value;
-    canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-};
-
-filterSelect.onchange = function() {
-    video.className = filterSelect.value;
-};
-
-thresholdSlider.oninput = function() {
-    edgeThreshold = parseInt(thresholdSlider.value);
-    thresholdValue.textContent = edgeThreshold;
-};
-
-const constraints = {
-    audio: false,
-    video: true
-};
-
-function handleSuccess(stream) {
-    video.srcObject = stream;
-    video.onloadedmetadata = function() {
-        processCannyEdge();
+if (thresholdSlider) {
+    thresholdSlider.oninput = function() {
+        edgeThreshold = parseInt(thresholdSlider.value);
+        thresholdValue.textContent = edgeThreshold;
     };
 }
 
-function handleError(error) {
-    console.log('navigator.MediaDevices.getUserMedia error: ', error.message, error.name);
+// Wait for the video to be ready before processing, even if canny_edge.js loads after the video
+if (cannyVideo) {
+    cannyVideo.addEventListener('loadedmetadata', function() {
+        processCannyEdge();
+    });
+    
+    if (cannyVideo.readyState >= 2) {
+        processCannyEdge();
+    }
 }
-
-navigator.mediaDevices.getUserMedia(constraints).then(handleSuccess).catch(handleError);
