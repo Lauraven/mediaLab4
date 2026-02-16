@@ -60,6 +60,17 @@
         video {
             object-fit: cover;
         }
+
+        #liveCanvas {
+            display: none;
+            object-fit: cover;
+        }
+        
+        .controls {
+            display: inline-block;
+            vertical-align: middle;
+            margin: 0 0 15px 0;
+        }
     </style>
 
 </head>
@@ -71,6 +82,7 @@
         </h1>
 
         <video id="video" playsinline autoplay></video>
+        <canvas id="liveCanvas"></canvas>
 
         <label for="filter">Filter: </label>
         <select id="filter">
@@ -79,9 +91,10 @@
             <option value="grayscale">Grayscale</option>
             <option value="invert">Invert</option>
             <option value="sepia">Sepia</option>
+            <option value="canny">Canny Edge</option>
         </select>
 
-        <button id="snapshot">Filter with filter</button>
+        <button id="snapshot">Take a snapshot</button>
         <div class="controls">
             <div id="thresholdControl" class="slider-group">
                 <label for="threshold">Canny Edge Threshold:</label>

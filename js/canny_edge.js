@@ -3,14 +3,13 @@
 const thresholdSlider = document.querySelector('#threshold');
 const thresholdValue = document.querySelector('#thresholdValue');
 
-// Uses existing global variables from main.js
 const cannyVideo = window.video;
-const cannyCanvas = window.canvas;
+const cannyCanvas = window.liveCanvas;
 const cannyCtx = cannyCanvas.getContext('2d');
 
 let edgeThreshold = 50;
 
-// Canny Edge Detection implementation
+// Canny Edge Detection
 function cannyEdgeDetection(imageData, threshold) {
     const width = imageData.width;
     const height = imageData.height;
@@ -72,7 +71,7 @@ function cannyEdgeDetection(imageData, threshold) {
 
 // Real-time Canny Edge processing
 function processCannyEdge() {
-    if (cannyVideo.videoWidth && cannyVideo.videoHeight) {
+    if (window.cannyEnabled && cannyVideo.videoWidth && cannyVideo.videoHeight) {
         cannyCtx.drawImage(cannyVideo, 0, 0, cannyCanvas.width, cannyCanvas.height);
         const imageData = cannyCtx.getImageData(0, 0, cannyCanvas.width, cannyCanvas.height);
         const filtered = cannyEdgeDetection(imageData, edgeThreshold);
@@ -84,16 +83,16 @@ function processCannyEdge() {
 if (thresholdSlider) {
     thresholdSlider.oninput = function() {
         edgeThreshold = parseInt(thresholdSlider.value);
+        window.edgeThreshold = edgeThreshold;
         thresholdValue.textContent = edgeThreshold;
     };
 }
 
-// Wait for the video to be ready before processing, even if canny_edge.js loads after the video
+// Start processing when video is ready
 if (cannyVideo) {
     cannyVideo.addEventListener('loadedmetadata', function() {
         processCannyEdge();
     });
-    
     if (cannyVideo.readyState >= 2) {
         processCannyEdge();
     }
